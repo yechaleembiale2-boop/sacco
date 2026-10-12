@@ -33,3 +33,4 @@ Thumbs.db
 *.dump
 *.sql.gz
 backups/
+*.tsbuildinfo
