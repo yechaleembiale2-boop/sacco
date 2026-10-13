@@ -6,10 +6,12 @@ import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
 import { MembersModule } from './members/members.module';
 import { AuditModule } from './audit/audit.module';
+import { AuthModule } from './auth/auth.module';
 import { Member } from './members/member.entity';
 import { LedgerAccount } from './ledger/ledger-account.entity';
 import { LedgerEntry } from './ledger/ledger-entry.entity';
 import { AuditLog } from './audit/audit-log.entity';
+import { User } from './users/user.entity';
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { AuditLog } from './audit/audit-log.entity';
         username: cfg.get<string>('DB_USER', 'sacco'),
         password: cfg.get<string>('DB_PASSWORD', 'change_me_pg'),
         database: cfg.get<string>('DB_NAME', 'sacco_db'),
-        entities: [Member, LedgerAccount, LedgerEntry, AuditLog],
+        entities: [Member, LedgerAccount, LedgerEntry, AuditLog, User],
         migrations: ['dist/database/migrations/*.js'],
         synchronize: false,
         logging: ['error', 'warn'],
@@ -32,6 +34,7 @@ import { AuditLog } from './audit/audit-log.entity';
     HealthModule,
     MembersModule,
     AuditModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
