@@ -4,22 +4,26 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
+import { Member } from './members/member.entity';
+import { LedgerAccount } from './ledger/ledger-account.entity';
+import { LedgerEntry } from './ledger/ledger-entry.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres' as const,
-        host: config.getOrThrow<string>('DB_HOST'),
-        port: parseInt(config.getOrThrow<string>('DB_PORT'), 10),
-        username: config.getOrThrow<string>('DB_USER'),
-        password: config.getOrThrow<string>('DB_PASSWORD'),
-        database: config.getOrThrow<string>('DB_NAME'),
-        autoLoadEntities: true,
-        // Schema changes happen ONLY through migrations, never auto-sync
+      useFactory: (cfg: ConfigService) => ({
+        type: 'postgres',
+        host: cfg.get<string>('DB_HOST', 'localhost'),
+        port: parseInt(cfg.get<string>('DB_PORT', '5433'), 10),
+        username: cfg.get<string>('DB_USER', 'sacco'),
+        password: cfg.get<string>('DB_PASSWORD', 'change_me_pg'),
+        database: cfg.get<string>('DB_NAME', 'sacco_db'),
+        entities: [Member, LedgerAccount, LedgerEntry],
+        migrations: ['dist/database/migrations/*.js'],
         synchronize: false,
+        logging: ['error', 'warn'],
       }),
     }),
     HealthModule,

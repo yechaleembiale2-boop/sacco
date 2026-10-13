@@ -8,6 +8,7 @@ async function bootstrap(): Promise<void> {
   const config = app.get(ConfigService);
 
   app.setGlobalPrefix('api/v1');
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -15,10 +16,19 @@ async function bootstrap(): Promise<void> {
       transform: true,
     }),
   );
-  app.enableCors({ origin: config.getOrThrow<string>('CORS_ORIGIN') });
+
+  app.enableCors({
+    origin: config.get<string>('CORS_ORIGIN') ?? 'http://localhost:3000',
+    credentials: true,
+  });
 
   const port = parseInt(config.get<string>('PORT') ?? '3001', 10);
   await app.listen(port);
+
+  // eslint-disable-next-line no-console
+  console.log(`🚀 Backend: http://localhost:${port}/api/v1`);
+  // eslint-disable-next-line no-console
+  console.log(`   Health: http://localhost:${port}/api/v1/health`);
 }
 
 void bootstrap();
