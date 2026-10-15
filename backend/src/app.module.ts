@@ -21,8 +21,9 @@ import { Loan } from './loans/loan.entity';
 import { LoanSchedule } from './loans/loan-schedule.entity';
 import { Guarantor } from './loans/guarantor.entity';
 import { ReportsModule } from './reports/reports.module';
-
-
+import { PayrollModule } from './payroll/payroll.module';
+import { PayrollRun } from './payroll/payroll-run.entity';
+import { PayrollRunItem } from './payroll/payroll-run-item.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -46,6 +47,8 @@ import { ReportsModule } from './reports/reports.module';
           Loan,
           LoanSchedule,
           Guarantor,
+          PayrollRun,
+          PayrollRunItem,
         ],
         migrations: ['dist/database/migrations/*.js'],
         synchronize: false,
@@ -60,6 +63,7 @@ import { ReportsModule } from './reports/reports.module';
     LedgerModule,
     LoansModule,
     ReportsModule,
+    PayrollModule,
   ],
   controllers: [AppController],
   providers: [AppService],
