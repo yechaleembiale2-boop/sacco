@@ -9,6 +9,7 @@ import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { SavingsModule } from './savings/savings.module';
 import { LedgerModule } from './ledger/ledger.module';
+import { LoansModule } from './loans/loans.module';
 import { Member } from './members/member.entity';
 import { LedgerAccount } from './ledger/ledger-account.entity';
 import { LedgerEntry } from './ledger/ledger-entry.entity';
@@ -16,6 +17,9 @@ import { AuditLog } from './audit/audit-log.entity';
 import { User } from './users/user.entity';
 import { SavingsAccount } from './savings/savings-account.entity';
 import { SavingsTransaction } from './savings/savings-transaction.entity';
+import { Loan } from './loans/loan.entity';
+import { LoanSchedule } from './loans/loan-schedule.entity';
+import { Guarantor } from './loans/guarantor.entity';
 
 @Module({
   imports: [
@@ -37,6 +41,9 @@ import { SavingsTransaction } from './savings/savings-transaction.entity';
           User,
           SavingsAccount,
           SavingsTransaction,
+          Loan,
+          LoanSchedule,
+          Guarantor,
         ],
         migrations: ['dist/database/migrations/*.js'],
         synchronize: false,
@@ -49,6 +56,7 @@ import { SavingsTransaction } from './savings/savings-transaction.entity';
     AuthModule,
     SavingsModule,
     LedgerModule,
+    LoansModule,
   ],
   controllers: [AppController],
   providers: [AppService],
