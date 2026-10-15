@@ -1,0 +1,12 @@
+ id | ledger_account_id |  debit  | credit  |      ref_type      
+----+-------------------+---------+---------+--------------------
+  1 |                 1 |  500.00 |    0.00 | savings_deposit
+  2 |                 4 |    0.00 |  500.00 | savings_deposit
+  3 |                 4 |  100.00 |    0.00 | savings_withdrawal
+  4 |                 1 |    0.00 |  100.00 | savings_withdrawal
+  5 |                 3 | 1000.00 |    0.00 | loan_disbursement
+  6 |                 1 |    0.00 | 1000.00 | loan_disbursement
+  7 |                 1 |  200.00 |    0.00 | loan_repayment
+  8 |                 3 |    0.00 |  200.00 | loan_repayment
+(8 rows)
+
