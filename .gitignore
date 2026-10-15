@@ -34,3 +34,6 @@ Thumbs.db
 *.sql.gz
 backups/
 *.tsbuildinfo
+*.csv
+backend/*.xlsx
+backend/*.csv
