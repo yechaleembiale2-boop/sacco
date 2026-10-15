@@ -1,0 +1,23 @@
+docker exec -it sacco-postgres psql -U sacco -d sacco_db -c "SELECT id, ledger_account_id, debit, credit, ref_type FROM ledger_entries ORDER BY id;" > docs/evidence/02-ledger-entries.txt 2>&1
+docker exec -it sacco-postgres psql -U sacco -d sacco_db -c "SELECT SUM(debit) AS dr, SUM(credit) AS cr FROM ledger_entries;" > docs/evidence/03-ledger-balance.txt 2>&1
+curl -s http://localhost:3001/api/v1/loans/1 -H "Authorization: Bearer $ADMIN_TOKEN" > docs/evidence/04-loan-record.json 2>&1
+curl -s http://localhost:3001/api/v1/loans/1/schedule -H "Authorization: Bearer $ADMIN_TOKEN" > docs/evidence/05-loan-schedule.json 2>&1
+
+git add docs/evidence/
+git commit -m "docs: add Day 6 evidence outputs"
+git push               List of relations
+ Schema |         Name         | Type  | Owner 
+--------+----------------------+-------+-------
+ public | audit_log            | table | sacco
+ public | guarantors           | table | sacco
+ public | ledger_accounts      | table | sacco
+ public | ledger_entries       | table | sacco
+ public | loan_schedules       | table | sacco
+ public | loans                | table | sacco
+ public | members              | table | sacco
+ public | migrations           | table | sacco
+ public | savings_accounts     | table | sacco
+ public | savings_transactions | table | sacco
+ public | users                | table | sacco
+(11 rows)
+

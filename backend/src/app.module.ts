@@ -20,6 +20,8 @@ import { SavingsTransaction } from './savings/savings-transaction.entity';
 import { Loan } from './loans/loan.entity';
 import { LoanSchedule } from './loans/loan-schedule.entity';
 import { Guarantor } from './loans/guarantor.entity';
+import { ReportsModule } from './reports/reports.module';
+
 
 @Module({
   imports: [
@@ -57,6 +59,7 @@ import { Guarantor } from './loans/guarantor.entity';
     SavingsModule,
     LedgerModule,
     LoansModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
