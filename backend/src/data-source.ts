@@ -6,9 +6,12 @@ import { LedgerAccount } from './ledger/ledger-account.entity';
 import { LedgerEntry } from './ledger/ledger-entry.entity';
 import { AuditLog } from './audit/audit-log.entity';
 import { User } from './users/user.entity';
+import { SavingsAccount } from './savings/savings-account.entity';
+import { SavingsTransaction } from './savings/savings-transaction.entity';
 import { InitialSchema1700000000000 } from './database/migrations/1700000000000-InitialSchema';
 import { AddAuditLog1700000001000 } from './database/migrations/1700000001000-AddAuditLog';
 import { AddUsers1700000002000 } from './database/migrations/1700000002000-AddUsers';
+import { AddSavings1700000003000 } from './database/migrations/1700000003000-AddSavings';
 
 dotenv.config();
 
@@ -19,11 +22,20 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER ?? 'sacco',
   password: process.env.DB_PASSWORD ?? 'change_me_pg',
   database: process.env.DB_NAME ?? 'sacco_db',
-  entities: [Member, LedgerAccount, LedgerEntry, AuditLog, User],
+  entities: [
+    Member,
+    LedgerAccount,
+    LedgerEntry,
+    AuditLog,
+    User,
+    SavingsAccount,
+    SavingsTransaction,
+  ],
   migrations: [
     InitialSchema1700000000000,
     AddAuditLog1700000001000,
     AddUsers1700000002000,
+    AddSavings1700000003000,
   ],
   synchronize: false,
 });
