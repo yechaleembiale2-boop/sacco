@@ -43,57 +43,41 @@ export default function DashboardPage() {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !user) router.replace('/login');
   }, [user, loading, router]);
 
-  // Load dashboard data — depends on user?.id, NOT user, to avoid re-render loop
   useEffect(() => {
-    if (!user?.id) return;
-
-    let cancelled = false;
+    if (!user) return;
 
     (async () => {
       try {
         const accounts = await apiFetch<SavingsAccount[]>('/savings/accounts');
-        if (cancelled) return;
-
         const myAccounts = accounts.filter((a) => a.memberId === user.id);
         setSavings(myAccounts.length ? myAccounts : accounts);
 
         const loans = await apiFetch<Loan[]>('/loans');
-        if (cancelled) return;
-
         const mine = loans.find(
           (l) =>
             l.status === 'disbursed' ||
             l.status === 'approved' ||
             l.status === 'pending',
         );
-
         if (mine) {
           setLoan(mine);
           const schedule = await apiFetch<ScheduleRow[]>(
             `/loans/${mine.id}/schedule`,
           );
-          if (cancelled) return;
           const next = schedule.find((s) => !s.paid);
           setNextInstallment(next ?? null);
         }
       } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load data');
-        }
+        setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
-        if (!cancelled) setFetching(false);
+        setFetching(false);
       }
     })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
+  }, [user]);
 
   if (loading || !user) {
     return (

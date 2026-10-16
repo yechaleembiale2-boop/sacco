@@ -15,9 +15,33 @@ export function Nav() {
 
   return (
     <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-      <Link href="/dashboard" className="font-semibold text-lg">
-        IU SACCO
-      </Link>
+      <div className="flex items-center gap-6">
+        <Link href="/dashboard" className="font-semibold text-lg">
+          IU SACCO
+        </Link>
+        {user && (
+          <div className="flex items-center gap-4 text-sm">
+            <Link
+              href="/dashboard"
+              className="text-gray-700 hover:text-blue-600 transition"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/statements"
+              className="text-gray-700 hover:text-blue-600 transition"
+            >
+              Statements
+            </Link>
+            <Link
+              href="/apply"
+              className="text-gray-700 hover:text-blue-600 transition"
+            >
+              Apply for Loan
+            </Link>
+          </div>
+        )}
+      </div>
       {user && (
         <div className="flex items-center gap-4 text-sm">
           <span className="text-gray-600">

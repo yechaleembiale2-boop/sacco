@@ -154,4 +154,13 @@ export class SavingsService {
       return { account, transaction: txn };
     });
   }
+
+  // NEW METHOD — must be inside the class, before the final closing brace
+  async listTransactions(accountId: string) {
+    await this.findOne(accountId);
+    return this.txnRepo.find({
+      where: { accountId },
+      order: { postedAt: 'DESC' },
+    });
+  }
 }

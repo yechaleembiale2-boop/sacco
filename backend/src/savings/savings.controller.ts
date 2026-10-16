@@ -39,6 +39,12 @@ export class SavingsController {
     return this.savings.findOne(id);
   }
 
+  @Get('accounts/:id/transactions')
+  @Roles('cashier', 'accountant', 'credit_committee', 'chairperson', 'auditor', 'admin')
+  listTransactions(@Param('id') id: string) {
+    return this.savings.listTransactions(id);
+  }
+
   @Post('accounts/:id/deposits')
   @Roles('cashier', 'admin')
   deposit(

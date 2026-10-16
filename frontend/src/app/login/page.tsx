@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { ApiRequestError } from '@/lib/api';
@@ -14,12 +14,9 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect if already logged in — must be inside useEffect, not render
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace('/dashboard');
-    }
-  }, [user, loading, router]);
+  if (!loading && user) {
+    router.replace('/dashboard');
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
