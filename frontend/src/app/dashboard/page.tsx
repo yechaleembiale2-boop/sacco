@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { useLanguage } from '@/lib/language-context';
 import { apiFetch } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/format';
+import { can } from '@/lib/permissions';
 import { Nav } from '@/components/nav';
 
 interface SavingsAccount {
@@ -114,6 +115,35 @@ export default function DashboardPage() {
           {t('dashboard_welcome')}, {user.username}
         </h1>
 
+        {/* Quick Actions — role-dependent */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <QuickAction href="/statements" label="View Statements" />
+          {can(user.role, 'apply_loan') && (
+            <QuickAction href="/apply" label="Apply for Loan" accent="blue" />
+          )}
+          {can(user.role, 'approve_loan') && (
+            <QuickAction
+              href="/pending"
+              label="Review Pending Loans"
+              accent="amber"
+            />
+          )}
+          {can(user.role, 'create_member') && (
+            <QuickAction
+              href="/admin/members"
+              label="Manage Members"
+              accent="green"
+            />
+          )}
+          {can(user.role, 'view_reports') && (
+            <QuickAction
+              href="/reports"
+              label="View Reports"
+              accent="purple"
+            />
+          )}
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
             {error}
@@ -176,7 +206,9 @@ export default function DashboardPage() {
                 <table className="w-full text-sm">
                   <thead className="text-left text-gray-700">
                     <tr className="border-b border-gray-100">
-                      <th className="px-6 py-2 font-medium">{t('table_type')}</th>
+                      <th className="px-6 py-2 font-medium">
+                        {t('table_type')}
+                      </th>
                       <th className="px-6 py-2 font-medium">
                         {t('table_opened')}
                       </th>
@@ -233,6 +265,12 @@ export default function DashboardPage() {
   );
 }
 
+// ─────────────────────────────────────────────────────────────
+// Helper components — defined AFTER the main component.
+// In TypeScript/React, functions can be anywhere at top level.
+// Convention: main component first, helpers below.
+// ─────────────────────────────────────────────────────────────
+
 function Card({
   title,
   value,
@@ -269,5 +307,35 @@ function Stat({ label, value }: { label: string; value: string }) {
       <p className="text-xs text-gray-600 uppercase font-semibold">{label}</p>
       <p className="font-medium capitalize mt-1 text-gray-900">{value}</p>
     </div>
+  );
+}
+
+function QuickAction({
+  href,
+  label,
+  accent = 'gray',
+}: {
+  href: string;
+  label: string;
+  accent?: 'gray' | 'blue' | 'amber' | 'green' | 'purple';
+}) {
+  const colors = {
+    gray: 'bg-gray-100 hover:bg-gray-200 text-gray-900',
+    blue: 'bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200',
+    amber:
+      'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200',
+    green:
+      'bg-green-50 hover:bg-green-100 text-green-800 border border-green-200',
+    purple:
+      'bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200',
+  }[accent];
+
+  return (
+    <Link
+      href={href}
+      className={`px-4 py-2 rounded-lg text-sm font-medium transition ${colors}`}
+    >
+      {label}
+    </Link>
   );
 }
