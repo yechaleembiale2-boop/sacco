@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { useLanguage } from '@/lib/language-context';
 import { apiFetch } from '@/lib/api';
+import { formatCurrency, formatDate } from '@/lib/format';
 import { Nav } from '@/components/nav';
 
 interface SavingsAccount {
@@ -34,6 +36,7 @@ interface ScheduleRow {
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
+  const { lang, t } = useLanguage();
   const router = useRouter();
 
   const [savings, setSavings] = useState<SavingsAccount[]>([]);
@@ -94,19 +97,21 @@ export default function DashboardPage() {
   if (loading || !user) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-700">Loading…</p>
+        <p className="text-gray-700">{t('dashboard_loading')}</p>
       </main>
     );
   }
 
   const totalSavings = savings.reduce((sum, a) => sum + Number(a.balance), 0);
+  const accountLabel =
+    savings.length === 1 ? t('common_account') : t('common_accounts');
 
   return (
     <>
       <Nav />
       <main className="max-w-5xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6 text-gray-900">
-          Welcome, {user.username}
+          {t('dashboard_welcome')}, {user.username}
         </h1>
 
         {error && (
@@ -116,63 +121,67 @@ export default function DashboardPage() {
         )}
 
         {fetching ? (
-          <p className="text-gray-700">Loading dashboard…</p>
+          <p className="text-gray-700">{t('dashboard_loading')}</p>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <Card
-                title="Total Savings"
-                value={`${totalSavings.toFixed(2)} ETB`}
-                subtitle={`${savings.length} account${
-                  savings.length === 1 ? '' : 's'
-                }`}
+                title={t('dashboard_total_savings')}
+                value={formatCurrency(totalSavings, lang)}
+                subtitle={`${savings.length} ${accountLabel}`}
                 accent="blue"
               />
               {loan ? (
                 <Link href={`/loans/${loan.id}`} className="block">
                   <Card
-                    title="Active Loan"
-                    value={`${Number(loan.principal).toFixed(2)} ETB`}
-                    subtitle={`${loan.loanType} · View details →`}
+                    title={t('dashboard_active_loan')}
+                    value={formatCurrency(loan.principal, lang)}
+                    subtitle={`${loan.loanType} · ${t('dashboard_view_details')} →`}
                     accent="amber"
                   />
                 </Link>
               ) : (
                 <Card
-                  title="Active Loan"
-                  value="—"
-                  subtitle="No active loan"
+                  title={t('dashboard_active_loan')}
+                  value={t('common_dash')}
+                  subtitle={t('dashboard_no_active_loan')}
                   accent="amber"
                 />
               )}
               <Card
-                title="Next Payment"
+                title={t('dashboard_next_payment')}
                 value={
                   nextInstallment
-                    ? `${Number(nextInstallment.totalDue).toFixed(2)} ETB`
-                    : '—'
+                    ? formatCurrency(nextInstallment.totalDue, lang)
+                    : t('common_dash')
                 }
-                subtitle={nextInstallment?.dueDate ?? 'Nothing due'}
+                subtitle={
+                  nextInstallment
+                    ? formatDate(nextInstallment.dueDate, lang)
+                    : t('dashboard_no_active_loan')
+                }
                 accent="green"
               />
             </div>
 
             <section className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
               <h2 className="px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">
-                Savings Accounts
+                {t('dashboard_savings_accounts')}
               </h2>
               {savings.length === 0 ? (
                 <p className="px-6 py-4 text-gray-700 text-sm">
-                  No savings accounts yet.
+                  {t('dashboard_no_accounts')}
                 </p>
               ) : (
                 <table className="w-full text-sm">
                   <thead className="text-left text-gray-700">
                     <tr className="border-b border-gray-100">
-                      <th className="px-6 py-2 font-medium">Type</th>
-                      <th className="px-6 py-2 font-medium">Opened</th>
+                      <th className="px-6 py-2 font-medium">{t('table_type')}</th>
+                      <th className="px-6 py-2 font-medium">
+                        {t('table_opened')}
+                      </th>
                       <th className="px-6 py-2 font-medium text-right">
-                        Balance
+                        {t('table_balance')}
                       </th>
                     </tr>
                   </thead>
@@ -186,10 +195,10 @@ export default function DashboardPage() {
                           {a.accountType}
                         </td>
                         <td className="px-6 py-3 text-gray-700">
-                          {a.openedAt}
+                          {formatDate(a.openedAt, lang)}
                         </td>
                         <td className="px-6 py-3 text-right font-mono">
-                          {Number(a.balance).toFixed(2)} ETB
+                          {formatCurrency(a.balance, lang)}
                         </td>
                       </tr>
                     ))}
@@ -201,19 +210,19 @@ export default function DashboardPage() {
             {loan && (
               <section className="bg-white rounded-xl shadow-sm border border-gray-200">
                 <h2 className="px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">
-                  Active Loan
+                  {t('dashboard_active_loan_section')}
                 </h2>
                 <div className="px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <Stat label="Type" value={loan.loanType} />
+                  <Stat label={t('table_type')} value={loan.loanType} />
                   <Stat
-                    label="Principal"
-                    value={`${Number(loan.principal).toFixed(2)} ETB`}
+                    label={t('table_principal')}
+                    value={formatCurrency(loan.principal, lang)}
                   />
                   <Stat
-                    label="Outstanding"
-                    value={`${Number(loan.outstandingBalance).toFixed(2)} ETB`}
+                    label={t('table_outstanding')}
+                    value={formatCurrency(loan.outstandingBalance, lang)}
                   />
-                  <Stat label="Status" value={loan.status} />
+                  <Stat label={t('table_status')} value={loan.status} />
                 </div>
               </section>
             )}
@@ -249,9 +258,7 @@ function Card({
         {title}
       </p>
       <p className="text-2xl font-bold mt-2 text-gray-900">{value}</p>
-      {subtitle && (
-        <p className="text-xs text-gray-600 mt-1">{subtitle}</p>
-      )}
+      {subtitle && <p className="text-xs text-gray-600 mt-1">{subtitle}</p>}
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 import { Nav } from '@/components/nav';
+import { useLanguage } from '@/lib/language-context';
+import { formatCurrency, formatDate } from '@/lib/format';
 
 interface SavingsAccount {
   id: string;
@@ -104,14 +106,17 @@ export default function StatementsPage() {
     (a, b) => new Date(a.postedAt).getTime() - new Date(b.postedAt).getTime(),
   );
 
-  let running = 0;
-  const withBalance = runningRows.map((t) => {
-    const amt = Number(t.amount);
-    running += t.txnType === 'deposit' ? amt : -amt;
-    return { ...t, runningBalance: running };
-  });
+  const withBalance = runningRows
+    .reduce<Array<Transaction & { runningBalance: number }>>((rows, t) => {
+      const previousBalance =
+        rows.length > 0 ? rows[rows.length - 1].runningBalance : 0;
+      const amount = Number(t.amount);
+      const runningBalance =
+        previousBalance + (t.txnType === 'deposit' ? amount : -amount);
 
-  withBalance.reverse();
+      return [...rows, { ...t, runningBalance }];
+    }, [])
+    .reverse();
 
   return (
     <>
