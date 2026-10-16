@@ -20,11 +20,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
+        <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      style={{ colorScheme: 'light' }}
     >
-      <body className="min-h-full flex flex-col bg-gray-50 text-gray-900">
+      <body
+        className="min-h-full flex flex-col"
+        style={{ backgroundColor: '#f9fafb', color: '#111827' }}
+      >
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
