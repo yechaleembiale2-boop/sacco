@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
@@ -36,6 +36,20 @@ interface ScheduleRow {
 }
 
 export default function LoanDetailsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex items-center justify-center">
+          <p className="text-gray-500">Loading…</p>
+        </main>
+      }
+    >
+      <LoanDetailsContent />
+    </Suspense>
+  );
+}
+
+function LoanDetailsContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -130,7 +144,7 @@ export default function LoanDetailsPage() {
           ← Back to dashboard
         </Link>
 
-        <h1 className="text-2xl font-bold mt-2 mb-6 capitalize">
+        <h1 className="text-2xl font-bold mt-2 mb-6 capitalize text-gray-900">
           {loan.loanType} Loan
         </h1>
 
@@ -149,7 +163,7 @@ export default function LoanDetailsPage() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-semibold">Repayment Progress</h2>
+            <h2 className="font-semibold text-gray-900">Repayment Progress</h2>
             <span className="text-sm text-gray-600 font-mono">
               {totalPaid.toFixed(2)} / {totalDue.toFixed(2)} ETB
             </span>
@@ -184,11 +198,11 @@ export default function LoanDetailsPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <h2 className="px-6 py-4 border-b border-gray-100 font-semibold">
+          <h2 className="px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">
             Repayment Schedule
           </h2>
           <table className="w-full text-sm">
-            <thead className="text-left text-gray-500">
+            <thead className="text-left text-gray-700">
               <tr className="border-b border-gray-100">
                 <th className="px-6 py-2 font-medium">#</th>
                 <th className="px-6 py-2 font-medium">Due Date</th>
@@ -198,7 +212,7 @@ export default function LoanDetailsPage() {
                 <th className="px-6 py-2 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-gray-900">
               {schedule.map((row) => (
                 <tr
                   key={row.id}
@@ -244,7 +258,9 @@ function InfoCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
       <p className="text-xs text-gray-500 uppercase tracking-wide">{label}</p>
-      <p className="text-lg font-semibold mt-1 capitalize">{value}</p>
+      <p className="text-lg font-semibold mt-1 capitalize text-gray-900">
+        {value}
+      </p>
     </div>
   );
 }

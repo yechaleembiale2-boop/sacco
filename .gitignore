@@ -37,3 +37,6 @@ backups/
 *.csv
 backend/*.xlsx
 backend/*.csv
+infra/.env.prod
+infra/nginx/certs/
+infra/postgres/backups/
