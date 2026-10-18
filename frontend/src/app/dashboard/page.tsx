@@ -118,9 +118,16 @@ export default function DashboardPage() {
         <div className="mb-8 animate-fade-in">
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             {t('dashboard_welcome')},{' '}
-            <span className="bg-gradient-primary bg-clip-text text-transparent">
-              {user.username}
-            </span>
+            <span
+       style={{
+         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+         WebkitBackgroundClip: 'text',
+         WebkitTextFillColor: 'transparent',
+         backgroundClip: 'text',
+      }}
+>
+        {user.username}
+       </span>
           </h1>
           <p className="text-slate-600 mt-1 text-sm">
             Here&apos;s your SACCO overview for today
