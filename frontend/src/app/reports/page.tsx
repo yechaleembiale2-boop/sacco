@@ -8,6 +8,7 @@ import { apiFetch } from '@/lib/api';
 import { Nav } from '@/components/nav';
 import { RoleGuard } from '@/components/role-guard';
 import { formatCurrency } from '@/lib/format';
+import { can } from '@/lib/permissions';
 
 interface TrialBalanceRow {
   code: string;
@@ -41,12 +42,18 @@ export default function ReportsPage() {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Redirect if not authenticated
   useEffect(() => {
     if (!loading && !user) router.replace('/login');
   }, [user, loading, router]);
 
+  // Load reports — only if user has permission
   useEffect(() => {
     if (!user?.id) return;
+    if (!can(user.role, 'view_reports')) {
+      return;
+    }
+
     let cancelled = false;
 
     (async () => {
@@ -72,9 +79,12 @@ export default function ReportsPage() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   if (loading || !user) return null;
+
+  // Gate: if user has no permission, RoleGuard will render the message
+  const hasPermission = can(user.role, 'view_reports');
 
   const totalDebit = trialBalance.reduce((s, r) => s + Number(r.totalDebit), 0);
   const totalCredit = trialBalance.reduce((s, r) => s + Number(r.totalCredit), 0);
@@ -85,7 +95,9 @@ export default function ReportsPage() {
       <Nav />
       <main className="max-w-5xl mx-auto p-6">
         <RoleGuard capability="view_reports">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Financial Reports</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+            Financial Reports
+          </h1>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
@@ -93,8 +105,8 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {fetching ? (
-            <p className="text-gray-700">Loading reports</p>
+          {!hasPermission ? null : fetching ? (
+            <p className="text-gray-700">Loading reports…</p>
           ) : (
             <>
               <section className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
@@ -102,11 +114,11 @@ export default function ReportsPage() {
                   <h2 className="font-semibold text-gray-900">Trial Balance</h2>
                   {balanced ? (
                     <span className="text-xs bg-green-100 text-green-800 font-medium px-2 py-0.5 rounded">
-                       Balanced
+                      ✓ Balanced
                     </span>
                   ) : (
                     <span className="text-xs bg-red-100 text-red-800 font-medium px-2 py-0.5 rounded">
-                       Unbalanced
+                      ✗ Unbalanced
                     </span>
                   )}
                 </div>
@@ -124,7 +136,9 @@ export default function ReportsPage() {
                   <tbody className="text-gray-900">
                     {trialBalance.map((row) => (
                       <tr key={row.code} className="border-t border-gray-100">
-                        <td className="px-6 py-2 font-mono text-gray-600">{row.code}</td>
+                        <td className="px-6 py-2 font-mono text-gray-600">
+                          {row.code}
+                        </td>
                         <td className="px-6 py-2">{row.name}</td>
                         <td className="px-6 py-2 capitalize text-gray-600 text-xs">
                           {row.type}
@@ -141,9 +155,15 @@ export default function ReportsPage() {
                       </tr>
                     ))}
                     <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold">
-                      <td className="px-6 py-3" colSpan={3}>TOTAL</td>
-                      <td className="px-6 py-3 text-right font-mono">{totalDebit.toFixed(2)}</td>
-                      <td className="px-6 py-3 text-right font-mono">{totalCredit.toFixed(2)}</td>
+                      <td className="px-6 py-3" colSpan={3}>
+                        TOTAL
+                      </td>
+                      <td className="px-6 py-3 text-right font-mono">
+                        {totalDebit.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-3 text-right font-mono">
+                        {totalCredit.toFixed(2)}
+                      </td>
                       <td className="px-6 py-3"></td>
                     </tr>
                   </tbody>
@@ -158,8 +178,13 @@ export default function ReportsPage() {
                   <table className="w-full text-sm">
                     <tbody className="text-gray-900">
                       {income.income.map((row) => (
-                        <tr key={row.code} className="border-t border-gray-100 first:border-t-0">
-                          <td className="px-6 py-2 text-gray-600 font-mono w-20">{row.code}</td>
+                        <tr
+                          key={row.code}
+                          className="border-t border-gray-100 first:border-t-0"
+                        >
+                          <td className="px-6 py-2 text-gray-600 font-mono w-20">
+                            {row.code}
+                          </td>
                           <td className="px-6 py-2">{row.name}</td>
                           <td className="px-6 py-2 text-right font-mono">
                             {formatCurrency(row.amount, lang)}
@@ -167,7 +192,9 @@ export default function ReportsPage() {
                         </tr>
                       ))}
                       <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold">
-                        <td className="px-6 py-3" colSpan={2}>Total Income</td>
+                        <td className="px-6 py-3" colSpan={2}>
+                          Total Income
+                        </td>
                         <td className="px-6 py-3 text-right font-mono">
                           {formatCurrency(income.totalIncome, lang)}
                         </td>
@@ -184,7 +211,10 @@ export default function ReportsPage() {
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-6 py-4">
                     {Object.entries(savings.byType).map(([type, data]) => (
-                      <div key={type} className="border border-gray-200 rounded-lg p-4">
+                      <div
+                        key={type}
+                        className="border border-gray-200 rounded-lg p-4"
+                      >
                         <p className="text-xs text-gray-600 uppercase font-semibold capitalize">
                           {type}
                         </p>
