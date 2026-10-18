@@ -76,7 +76,6 @@ export default function ReportsPage() {
 
   if (loading || !user) return null;
 
-  // Compute totals
   const totalDebit = trialBalance.reduce((s, r) => s + Number(r.totalDebit), 0);
   const totalCredit = trialBalance.reduce((s, r) => s + Number(r.totalCredit), 0);
   const balanced = Math.abs(totalDebit - totalCredit) < 0.01;
@@ -95,20 +94,19 @@ export default function ReportsPage() {
           )}
 
           {fetching ? (
-            <p className="text-gray-700">Loading reports…</p>
+            <p className="text-gray-700">Loading reports</p>
           ) : (
             <>
-              {/* Trial Balance */}
               <section className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
                 <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                   <h2 className="font-semibold text-gray-900">Trial Balance</h2>
                   {balanced ? (
                     <span className="text-xs bg-green-100 text-green-800 font-medium px-2 py-0.5 rounded">
-                      ✓ Balanced
+                       Balanced
                     </span>
                   ) : (
                     <span className="text-xs bg-red-100 text-red-800 font-medium px-2 py-0.5 rounded">
-                      ✗ Unbalanced
+                       Unbalanced
                     </span>
                   )}
                 </div>
@@ -143,22 +141,15 @@ export default function ReportsPage() {
                       </tr>
                     ))}
                     <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold">
-                      <td className="px-6 py-3" colSpan={3}>
-                        TOTAL
-                      </td>
-                      <td className="px-6 py-3 text-right font-mono">
-                        {totalDebit.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-3 text-right font-mono">
-                        {totalCredit.toFixed(2)}
-                      </td>
+                      <td className="px-6 py-3" colSpan={3}>TOTAL</td>
+                      <td className="px-6 py-3 text-right font-mono">{totalDebit.toFixed(2)}</td>
+                      <td className="px-6 py-3 text-right font-mono">{totalCredit.toFixed(2)}</td>
                       <td className="px-6 py-3"></td>
                     </tr>
                   </tbody>
                 </table>
               </section>
 
-              {/* Income Statement */}
               {income && (
                 <section className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
                   <h2 className="px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">
@@ -168,9 +159,7 @@ export default function ReportsPage() {
                     <tbody className="text-gray-900">
                       {income.income.map((row) => (
                         <tr key={row.code} className="border-t border-gray-100 first:border-t-0">
-                          <td className="px-6 py-2 text-gray-600 font-mono w-20">
-                            {row.code}
-                          </td>
+                          <td className="px-6 py-2 text-gray-600 font-mono w-20">{row.code}</td>
                           <td className="px-6 py-2">{row.name}</td>
                           <td className="px-6 py-2 text-right font-mono">
                             {formatCurrency(row.amount, lang)}
@@ -178,9 +167,7 @@ export default function ReportsPage() {
                         </tr>
                       ))}
                       <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold">
-                        <td className="px-6 py-3" colSpan={2}>
-                          Total Income
-                        </td>
+                        <td className="px-6 py-3" colSpan={2}>Total Income</td>
                         <td className="px-6 py-3 text-right font-mono">
                           {formatCurrency(income.totalIncome, lang)}
                         </td>
@@ -190,7 +177,6 @@ export default function ReportsPage() {
                 </section>
               )}
 
-              {/* Savings Summary */}
               {savings && (
                 <section className="bg-white rounded-xl shadow-sm border border-gray-200">
                   <h2 className="px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">
