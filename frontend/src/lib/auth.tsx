@@ -13,6 +13,7 @@ export interface AuthUser {
   id: string;
   username: string;
   role: string;
+  memberId: string | null;  // add this
 }
 
 interface AuthContextValue {
@@ -31,11 +32,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      setLoading(false);
+      queueMicrotask(() => setLoading(false));
       return;
     }
-    apiFetch<{ id: string; username: string; role: string }>('/auth/me')
-      .then((u) => setUser({ id: u.id, username: u.username, role: u.role }))
+    apiFetch<{
+      id: string;
+      username: string;
+      role: string;
+      memberId: string | null;
+    }>('/auth/me')
+      .then((u) =>
+        setUser({
+          id: u.id,
+          username: u.username,
+          role: u.role,
+          memberId: u.memberId,
+        }),
+      )
       .catch(() => localStorage.removeItem('token'))
       .finally(() => setLoading(false));
   }, []);

@@ -29,7 +29,6 @@ export class AuthService {
     if (existing) {
       throw new ConflictException(`Username "${dto.username}" is taken`);
     }
-
     const user = this.usersRepo.create({
       username: dto.username,
       passwordHash: await this.password.hash(dto.password),

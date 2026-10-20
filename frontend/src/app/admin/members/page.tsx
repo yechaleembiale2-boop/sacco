@@ -19,12 +19,24 @@ interface Member {
   createdAt: string;
 }
 
+interface SavingsAccount {
+  id: string;
+  memberId: string;
+  accountType: string;
+  balance: string;
+}
+
+interface MemberWithBalance extends Member {
+  totalBalance: number;
+  accountCount: number;
+}
+
 export default function AdminMembersPage() {
   const { user, loading } = useAuth();
   const { lang } = useLanguage();
   const router = useRouter();
 
-  const [members, setMembers] = useState<Member[]>([]);
+  const [members, setMembers] = useState<MemberWithBalance[]>([]);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -35,10 +47,37 @@ export default function AdminMembersPage() {
     if (!loading && !user) router.replace('/login');
   }, [user, loading, router]);
 
+  // Combined loader: fetch members + savings accounts, then merge
   const loadMembers = async () => {
     try {
-      const list = await apiFetch<Member[]>('/members');
-      setMembers(list);
+      const [list, accounts] = await Promise.all([
+        apiFetch<Member[]>('/members'),
+        apiFetch<SavingsAccount[]>('/savings/accounts'),
+      ]);
+
+      const enriched: MemberWithBalance[] = list.map((m) => {
+        const myAccounts = accounts.filter((a) => a.memberId === m.id);
+        const totalBalance = myAccounts.reduce(
+          (sum, a) => sum + Number(a.balance),
+          0,
+        );
+        return {
+          ...m,
+          totalBalance,
+          accountCount: myAccounts.length,
+        };
+      });
+
+      // Sort: active first, then by name
+      enriched.sort((a, b) => {
+        if (a.status !== b.status) {
+          const order = { active: 0, suspended: 1, closed: 2 };
+          return order[a.status] - order[b.status];
+        }
+        return a.memberNo.localeCompare(b.memberNo);
+      });
+
+      setMembers(enriched);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load');
     } finally {
@@ -51,10 +90,36 @@ export default function AdminMembersPage() {
 
     let cancelled = false;
 
-    const fetchMembers = async () => {
+    const fetchData = async () => {
       try {
-        const list = await apiFetch<Member[]>('/members');
-        if (!cancelled) setMembers(list);
+        const [list, accounts] = await Promise.all([
+          apiFetch<Member[]>('/members'),
+          apiFetch<SavingsAccount[]>('/savings/accounts'),
+        ]);
+        if (cancelled) return;
+
+        const enriched: MemberWithBalance[] = list.map((m) => {
+          const myAccounts = accounts.filter((a) => a.memberId === m.id);
+          const totalBalance = myAccounts.reduce(
+            (sum, a) => sum + Number(a.balance),
+            0,
+          );
+          return {
+            ...m,
+            totalBalance,
+            accountCount: myAccounts.length,
+          };
+        });
+
+        enriched.sort((a, b) => {
+          if (a.status !== b.status) {
+            const order = { active: 0, suspended: 1, closed: 2 };
+            return order[a.status] - order[b.status];
+          }
+          return a.memberNo.localeCompare(b.memberNo);
+        });
+
+        setMembers(enriched);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Failed to load');
@@ -64,7 +129,7 @@ export default function AdminMembersPage() {
       }
     };
 
-    void fetchMembers();
+    void fetchData();
 
     return () => {
       cancelled = true;
@@ -83,7 +148,7 @@ export default function AdminMembersPage() {
     );
   }, [members, search]);
 
-  const handleClose = async (member: Member) => {
+  const handleClose = async (member: MemberWithBalance) => {
     if (member.status === 'closed') {
       setError('Member is already closed');
       return;
@@ -112,6 +177,7 @@ export default function AdminMembersPage() {
 
   const activeCount = members.filter((m) => m.status === 'active').length;
   const closedCount = members.filter((m) => m.status === 'closed').length;
+  const grandTotal = members.reduce((sum, m) => sum + m.totalBalance, 0);
 
   return (
     <>
@@ -125,7 +191,10 @@ export default function AdminMembersPage() {
                 Members
               </h1>
               <p className="text-slate-600 mt-1 text-sm">
-                {activeCount} active · {closedCount} closed
+                {activeCount} active · {closedCount} closed ·{' '}
+                <span className="font-semibold text-slate-900">
+                  Grand total: {grandTotal.toFixed(2)} ETB
+                </span>
               </p>
             </div>
             <button
@@ -226,6 +295,9 @@ export default function AdminMembersPage() {
                     <th className="px-6 py-3 font-medium">Name</th>
                     <th className="px-6 py-3 font-medium">Contact</th>
                     <th className="px-6 py-3 font-medium">Joined</th>
+                    <th className="px-6 py-3 font-medium text-right">
+                      Balance
+                    </th>
                     <th className="px-6 py-3 font-medium">Status</th>
                     <th className="px-6 py-3 font-medium text-right">
                       Actions
@@ -253,6 +325,17 @@ export default function AdminMembersPage() {
                       </td>
                       <td className="px-6 py-3 text-slate-600 text-xs">
                         {formatDate(m.createdAt, lang)}
+                      </td>
+                      <td className="px-6 py-3 text-right">
+                        <div className="flex flex-col items-end">
+                          <span className="font-mono font-semibold text-slate-900">
+                            {m.totalBalance.toFixed(2)} ETB
+                          </span>
+                          <span className="text-[10px] text-slate-500">
+                            {m.accountCount}{' '}
+                            {m.accountCount === 1 ? 'account' : 'accounts'}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-6 py-3">
                         <StatusBadge status={m.status} />

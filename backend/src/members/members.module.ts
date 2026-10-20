@@ -4,9 +4,10 @@ import { Member } from './member.entity';
 import { MembersService } from './members.service';
 import { MembersController } from './members.controller';
 import { AuditModule } from '../audit/audit.module';
+import { SavingsModule } from '../savings/savings.module';  
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Member]), AuditModule],
+  imports: [TypeOrmModule.forFeature([Member]), AuditModule, SavingsModule],
   controllers: [MembersController],
   providers: [MembersService],
   exports: [MembersService],

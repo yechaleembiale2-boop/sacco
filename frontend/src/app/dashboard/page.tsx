@@ -20,6 +20,7 @@ interface SavingsAccount {
 
 interface Loan {
   id: string;
+  memberId: string;
   loanType: string;
   principal: string;
   status: string;
@@ -59,31 +60,62 @@ export default function DashboardPage() {
 
     (async () => {
       try {
+        // Try to fetch savings accounts
+        // For members: filter by their linked memberId (if available)
+        // For staff: show all accounts
         const accounts = await apiFetch<SavingsAccount[]>('/savings/accounts');
         if (cancelled) return;
-        const myAccounts = accounts.filter((a) => a.memberId === user.id);
-        setSavings(myAccounts.length ? myAccounts : accounts);
 
+        const isMember = user.role === 'member';
+        let myAccounts = accounts;
+
+        if (isMember) {
+          // If user has a linked memberId, filter to that
+          // Otherwise show all (fallback behavior)
+          const userAny = user as { memberId?: string | null };
+          const memberId = userAny.memberId;
+          if (memberId) {
+            const filtered = accounts.filter((a) => a.memberId === memberId);
+            if (filtered.length > 0) myAccounts = filtered;
+          }
+        }
+
+        setSavings(myAccounts);
+
+        // Try to fetch loans
         const loans = await apiFetch<Loan[]>('/loans');
         if (cancelled) return;
-        const mine = loans.find(
+
+        // Find the "active" loan (disbursed/approved/pending)
+        const activeLoan = loans.find(
           (l) =>
             l.status === 'disbursed' ||
             l.status === 'approved' ||
             l.status === 'pending',
         );
-        if (mine) {
-          setLoan(mine);
-          const schedule = await apiFetch<ScheduleRow[]>(
-            `/loans/${mine.id}/schedule`,
-          );
-          if (cancelled) return;
-          const next = schedule.find((s) => !s.paid);
-          setNextInstallment(next ?? null);
+
+        if (activeLoan) {
+          setLoan(activeLoan);
+          try {
+            const schedule = await apiFetch<ScheduleRow[]>(
+              `/loans/${activeLoan.id}/schedule`,
+            );
+            if (cancelled) return;
+            const next = schedule.find((s) => !s.paid);
+            setNextInstallment(next ?? null);
+          } catch {
+            // Schedule fetch failed, but loan info is still useful
+          }
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load data');
+          // Only show error to non-member roles
+          // Members shouldn't see backend role errors
+          if (user.role !== 'member') {
+            setError(
+              err instanceof Error ? err.message : 'Failed to load data',
+            );
+          }
         }
       } finally {
         if (!cancelled) setFetching(false);
@@ -93,7 +125,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   if (loading || !user) {
     return (
@@ -119,15 +151,15 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             {t('dashboard_welcome')},{' '}
             <span
-       style={{
-         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-         WebkitBackgroundClip: 'text',
-         WebkitTextFillColor: 'transparent',
-         backgroundClip: 'text',
-      }}
->
-        {user.username}
-       </span>
+              style={{
+                background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              {user.username}
+            </span>
           </h1>
           <p className="text-slate-600 mt-1 text-sm">
             Here&apos;s your SACCO overview for today
@@ -363,7 +395,6 @@ function Card({
     <div
       className={`group relative block bg-white rounded-2xl border ${accentMap.border} p-5 card-hover animate-slide-up overflow-hidden`}
     >
-      {/* Decorative accent bar */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${accentMap.accentBar}`} />
 
       <div className="flex items-start justify-between mb-3">
