@@ -68,6 +68,12 @@ export function Nav() {
                   Reports
                 </NavLink>
               )}
+              
+              {/* 🚀 NEW LINK ADDED HERE */}
+              <NavLink href="/mfa-setup" active={isActive('/mfa-setup')}>
+                MFA Setup
+              </NavLink>
+              
             </div>
           )}
         </div>

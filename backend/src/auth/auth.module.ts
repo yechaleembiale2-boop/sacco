@@ -9,6 +9,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuditModule } from '../audit/audit.module';
+import { TotpService } from './totp.service';
+
 
 @Module({
   imports: [
@@ -27,7 +29,7 @@ import { AuditModule } from '../audit/audit.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PasswordService, JwtStrategy],
+  providers: [AuthService, PasswordService, JwtStrategy,TotpService],
   exports: [AuthService, PasswordService],
 })
 export class AuthModule {}

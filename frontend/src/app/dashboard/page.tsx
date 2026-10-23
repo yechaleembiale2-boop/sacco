@@ -40,6 +40,9 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const { lang, t } = useLanguage();
   const router = useRouter();
+  const userId = user?.id;
+  const userRole = user?.role;
+  const memberId = (user as { memberId?: string | null } | null)?.memberId;
 
   const [savings, setSavings] = useState<SavingsAccount[]>([]);
   const [loan, setLoan] = useState<Loan | null>(null);
@@ -54,7 +57,7 @@ export default function DashboardPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!userId) return;
 
     let cancelled = false;
 
@@ -66,14 +69,12 @@ export default function DashboardPage() {
         const accounts = await apiFetch<SavingsAccount[]>('/savings/accounts');
         if (cancelled) return;
 
-        const isMember = user.role === 'member';
+        const isMember = userRole === 'member';
         let myAccounts = accounts;
 
         if (isMember) {
           // If user has a linked memberId, filter to that
           // Otherwise show all (fallback behavior)
-          const userAny = user as { memberId?: string | null };
-          const memberId = userAny.memberId;
           if (memberId) {
             const filtered = accounts.filter((a) => a.memberId === memberId);
             if (filtered.length > 0) myAccounts = filtered;
@@ -111,7 +112,7 @@ export default function DashboardPage() {
         if (!cancelled) {
           // Only show error to non-member roles
           // Members shouldn't see backend role errors
-          if (user.role !== 'member') {
+          if (userRole !== 'member') {
             setError(
               err instanceof Error ? err.message : 'Failed to load data',
             );
@@ -125,7 +126,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, user?.role]);
+  }, [userId, userRole, memberId]);
 
   if (loading || !user) {
     return (

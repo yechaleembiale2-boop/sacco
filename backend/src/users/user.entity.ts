@@ -44,4 +44,11 @@ export class User {
 
   @Column({ name: 'last_login_at', type: 'timestamptz', nullable: true })
   lastLoginAt!: Date | null;
+  @Column({ name: 'totp_secret', type: 'text', nullable: true })
+totpSecret!: string | null;
+
+@Column({ name: 'mfa_enrolled_at', type: 'timestamptz', nullable: true })
+mfaEnrolledAt!: Date | null;
+
+
 }

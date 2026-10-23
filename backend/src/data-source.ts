@@ -19,6 +19,8 @@ import { AddUsers1700000002000 } from './database/migrations/1700000002000-AddUs
 import { AddSavings1700000003000 } from './database/migrations/1700000003000-AddSavings';
 import { AddLoans1700000004000 } from './database/migrations/1700000004000-AddLoans';
 import { AddPayroll1700000005000 } from './database/migrations/1700000005000-AddPayroll';
+import { AddMfaFields1700000006000 } from './database/migrations/1700000006000-AddMfaFields';
+
 
 dotenv.config();
 
@@ -50,6 +52,7 @@ export const AppDataSource = new DataSource({
     AddSavings1700000003000,
     AddLoans1700000004000,
     AddPayroll1700000005000,
+    AddMfaFields1700000006000,
   ],
   synchronize: false,
 });
